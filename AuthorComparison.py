@@ -45,7 +45,7 @@ def process_authors_csv(filename, author_names):
     df = pd.read_csv(filename)
     df['Authors'] = df['Authors'].apply(lambda x: literal_eval(x))  # Convert string to list
 
-    # Filter publications where any of the frequent authors appear
+    #filter publications where any of the frequent authors appear
     publications_with_frequent_authors = df[
         df['Authors'].apply(lambda authors: any(author in author_names for author in authors))
     ]
