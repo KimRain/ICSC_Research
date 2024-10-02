@@ -20,18 +20,15 @@ arg = parser.parse_args()
 if arg.seed: random.seed(arg.seed)
 
 Authors = {}
-Porcids = 0
 
 def random_authors(n, f):
-	global Porcids
 	alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 	my_authors = []
 	for _ in range(n):
 		name = []
 		for _ in range(10): name.append(random.choice(alph))
 		name = ''.join(name)
-		porcid = Porcids
-		Porcids += 1
+		porcid = random.randint(1000000000, 9999999999)
 		if random.random() > f or len(Authors) == 0:
 			Authors[name] = 1
 			my_authors.append((name, porcid))
