@@ -55,9 +55,9 @@ for i in range(arg.hubs):
 print(all_pubs)
 
 # The porcids are the answer, ideally in the list of authors we don't
-# know whether the authors are unique individuals or the same person
-# must compare somehow to identify if authors are different people
-# then assign them a porcid
+# Know whether the authors are unique individuals or the same person
+# Must compare somehow to identify if authors are different people
+# Then assign them a porcid
 
 with open('authors_only.csv', 'w', newline='') as fpa, \
 		open('porcids_only.csv', 'w', newline='') as fpp, \
