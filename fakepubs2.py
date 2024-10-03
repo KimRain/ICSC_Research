@@ -48,7 +48,12 @@ def generate_pubs(n, f, mn, mx):
 	return pubs
 
 # store all data in a nested dict. structure
+# labeled data
 all_hubs = {}
+
+# list of lists containing all authors/pub
+# unlabeled data
+all_pubs = []
 
 for i in range(arg.hubs):
 	# assign hub_ids
@@ -59,11 +64,20 @@ for i in range(arg.hubs):
 		hub_data[f'publication {pub_id}'] = [{"author": author[0], "porcid": author[1]} for author in pub]
 		all_hubs[f'hub_id:{hub_id}'] = hub_data
 
+		# store just author names in list
+		all_pubs.append([author[0] for author in pub])
+
 # output data, might change to outputting JSON file later
+# print statements for my visualization
 for hub_id, hub_data in all_hubs.items():
 	print(f"{hub_id}:")
 	for pub_id, authors in hub_data.items():
 		print(f" {pub_id}: {authors}")
 	print()
+
+print(f'num of pubs:{len(all_pubs)}')
+print("authors per pub:")
+for i, pub_authors in enumerate(all_pubs, start=1):
+	print(pub_authors)
 
 
