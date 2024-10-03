@@ -1,5 +1,4 @@
 import argparse
-import csv
 import random
 import string
 
@@ -25,7 +24,7 @@ Authors = {}
 def random_authors(n, f):
 	my_authors = []
 	for _ in range(n):
-		name = ''.join(random.choice(string.ascii_uppercase) for _ in range(10))
+		name = ''.join(random.choice(string.ascii_uppercase) for _ in range(8))
 		porcid = random.randint(1000000000, 9999999999)
 		if random.random() > f or len(Authors) == 0:
 			Authors[name] = 1
@@ -43,60 +42,28 @@ def generate_pubs(n, f, mn, mx):
 	for i in range(n):
 		this_pub = []
 		auts = random.sample(authors, random.randint(mn, mx))
-		for a in auts: this_pub.append(a)
+		for a in auts:
+			this_pub.append(a)
 		pubs.append(this_pub)
 	return pubs
 
-all_pubs = []
+# store all data in a nested dict. structure
+all_hubs = {}
+
 for i in range(arg.hubs):
-	pubs = generate_pubs(arg.pubsperhub, arg.dupauthor, arg.minauthor,
-		arg.maxauthor)
-	for pub in pubs: all_pubs.append(pub)
-print(all_pubs)
+	# assign hub_ids
+	hub_id = i + 1
+	hub_data = {}
+	pubs = generate_pubs(arg.pubsperhub, arg.dupauthor, arg.minauthor, arg.maxauthor)
+	for pub_id, pub in enumerate(pubs, start=1):
+		hub_data[f'publication {pub_id}'] = [{"author": author[0], "porcid": author[1]} for author in pub]
+		all_hubs[f'hub_id:{hub_id}'] = hub_data
 
-# The porcids are the answer, ideally in the list of authors we don't
-# Know whether the authors are unique individuals or the same person
-# Must compare somehow to identify if authors are different people
-# Then assign them a porcid
+# output data, might change to outputting JSON file later
+for hub_id, hub_data in all_hubs.items():
+	print(f"{hub_id}:")
+	for pub_id, authors in hub_data.items():
+		print(f" {pub_id}: {authors}")
+	print()
 
-with open('authors_only.csv', 'w', newline='') as fpa, \
-		open('porcids_only.csv', 'w', newline='') as fpp, \
-		open('author_porcid.csv', 'w', newline='') as fpx, \
-		open('author_edges.csv', 'w', newline='') as fnetwork, \
-		open('edges_with_porcid.csv', 'w', newline='') as fedges_porcid:
 
-	author_writer = csv.writer(fpa)
-	porcid_writer = csv.writer(fpp)
-	author_porcid_writer = csv.writer(fpx)
-	network_writer = csv.writer(fnetwork)
-	edges_porcid_writer = csv.writer(fedges_porcid)
-
-	# Write headers
-	author_writer.writerow(['Authors'])
-	porcid_writer.writerow(['PORCIDs'])
-	author_porcid_writer.writerow(['Author', 'PORCID'])
-	network_writer.writerow(['Start Node', 'End Node'])  # Header for edges
-	edges_porcid_writer.writerow(['Start Node', 'End Node', 'Last Author PORCID'])  # Header for edges with PORCID
-
-	# Write data to CSV
-	for pub in all_pubs:
-		authors = [author for author, porcid in pub]
-		porcids = [porcid for author, porcid in pub]
-
-		author_writer.writerow([authors])  #All authors in one cell
-		porcid_writer.writerow([porcids])  #All PORCIDs in one cell
-
-		for author, porcid in pub:
-			author_porcid_writer.writerow([author, porcid])
-
-		last_author = pub[-1][0]
-		last_author_porcid = pub[-1][1]  # Last author's PORCID
-		last_author_node = f"{last_author}"  # Mark last author uniquely
-
-		for idx, (author, _) in enumerate(pub[:-1]):  # All others as End Nodes
-			author_node = f"{author}"
-			network_writer.writerow([last_author_node, author_node])  # Normal edges
-			edges_porcid_writer.writerow([last_author_node, author_node, last_author_porcid])  # Edges with PORCID
-
-if arg.verbose: print(f"Generated {len(all_pubs)} publications.")
-print(Authors)
