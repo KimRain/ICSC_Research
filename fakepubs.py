@@ -1,70 +1,60 @@
 import argparse
+import json
 import math
 import random
 
 parser = argparse.ArgumentParser(description='fake co-publication data gen')
 parser.add_argument('hubs', type=int, help='co-publication hubs')
-parser.add_argument('--authorsperhub', type=int, default=10)
-parser.add_argument('--pubsperhub', type=int, default=10)
-parser.add_argument('--dupauthor', type=float, default=0.1)
-parser.add_argument('--minauthor', type=int, default=2, help='min authors')
-parser.add_argument('--maxauthor', type=int, default=9, help='max authors')
-parser.add_argument('--nonhub', type=float, default=0.25,
-	help='non-hub pubs %(default)s')
-parser.add_argument('--escape', type=float, default=0.10,
-	help='author crosses hubs %(default)s')
+parser.add_argument('--aph_min', type=int, default=5,
+	help='minimum authors per hub')
+parser.add_argument('--aph_max', type=int, default=20,
+	help='maximum authors per hub')
+parser.add_argument('--pph_min', type=int, default=10,
+	help='minimum pubs per hub')
+parser.add_argument('--pph_max', type=int, default=50,
+	help='maximum pubs per hub')
+parser.add_argument('--app_min', type=int, default=1,
+	help='minimum authors per pub')
+parser.add_argument('--app_max', type=int, default=10,
+	help='maximum authors per pub')
+parser.add_argument('--samename', type=float, default=0.1,
+	help='probability of names crossing hubs')
 parser.add_argument('--seed', type=int)
 parser.add_argument('--verbose', action='store_true', help='show progress')
 arg = parser.parse_args()
 
 if arg.seed: random.seed(arg.seed)
 
-Authors = {}
-
-def random_authors(n, f):
-	alph = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-	my_authors = []
-	for _ in range(n):
-		name = []
-		for _ in range(10): name.append(random.choice(alph))
-		name = ''.join(name)
-		porcid = random.randint(1000000000, 9999999999)
-		if random.random() > f or len(Authors) == 0:
-			Authors[name] = 1
-			my_authors.append((name, porcid))
-		else:
-			a = random.choice(list(Authors.keys()))
-			Authors[a] += 1
-			my_authors.append((a, porcid))
-	return my_authors
-
-
-def generate_pubs(n, f, mn, mx):
-	authors = random_authors(n, f)
-	pubs = []
-	for i in range(n):
-		this_pub = []
-		auts = random.sample(authors, random.randint(mn, mx))
-		for a in auts: this_pub.append(a)
-		pubs.append(this_pub)
-	return pubs
-
-all_pubs = []
-for i in range(arg.hubs):
-	pubs = generate_pubs(arg.pubsperhub, arg.dupauthor, arg.minauthor,
-		arg.maxauthor)
-	for pub in pubs: all_pubs.append(pub)
-
-fpa = open('authors_only.txt', 'w')
-fpp = open('porcids_only.txt', 'w')
-fpx = open('author_porcid.txt', 'w')
-
-for pub in pubs:
+# generate hubs with ids and unique names (actually also the id)
+hubs = []
+total_authors = 0
+for hid in range(arg.hubs):
 	authors = []
-	porcids = []
-	for author, porcid in pub:
-		authors.append(author)
-		porcids.append(porcid)
-	fpa.write(f'{authors}\n')
-	fpp.write(f'{porcids}\n')
-	fpx.write(f'{pub}\n')
+	for aid in range(int(random.randint(arg.aph_min, arg.aph_max))):
+		authors.append({'id': f'H{hid}-A{aid}', 'name': f'H{hid}-A{aid}'})
+		total_authors += 1
+	hubs.append(authors)
+
+# generate pairs of redundant author names across hubs
+did = 0
+for i in range(int(total_authors * arg.samename)):
+	h1, h2 = random.sample(hubs, 2)
+	a1 = random.choice(h1)
+	a2 = random.choice(h2)
+	if a1['name'].startswith('D') or a2['name'].startswith('D'): continue
+	name = f'D{did}'
+	a1['name'] = name
+	a2['name'] = name
+	did += 1
+
+# generate pubs
+pubs = []
+pid = 0
+for hid, hub in enumerate(hubs):
+	npubs = random.randint(arg.pph_min, arg.pph_max)
+	for _ in range(npubs):
+		n = int(random.randint(arg.app_min, min([len(hub), arg.app_max])))
+		pubs.append({'pid': f'H{hid}-P{pid}', 'authors': random.sample(hub, n)})
+		pid += 1
+
+print(json.dumps(pubs, indent=4))
