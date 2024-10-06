@@ -6,19 +6,19 @@ import random
 parser = argparse.ArgumentParser(description='fake co-publication data gen')
 parser.add_argument('hubs', type=int, help='co-publication hubs')
 parser.add_argument('--aph_min', type=int, default=5,
-	help='minimum authors per hub')
+	help='minimum authors per hub [%(default)i]')
 parser.add_argument('--aph_max', type=int, default=20,
-	help='maximum authors per hub')
+	help='maximum authors per hub [%(default)i]')
 parser.add_argument('--pph_min', type=int, default=10,
-	help='minimum pubs per hub')
+	help='minimum pubs per hub [%(default)i]')
 parser.add_argument('--pph_max', type=int, default=50,
-	help='maximum pubs per hub')
+	help='maximum pubs per hub [%(default)i]')
 parser.add_argument('--app_min', type=int, default=1,
-	help='minimum authors per pub')
+	help='minimum authors per pub [%(default)i]')
 parser.add_argument('--app_max', type=int, default=10,
-	help='maximum authors per pub')
+	help='maximum authors per pub [%(default)i]')
 parser.add_argument('--samename', type=float, default=0.1,
-	help='probability of names crossing hubs')
+	help='probability of names crossing hubs [%(default).2f]')
 parser.add_argument('--seed', type=int)
 parser.add_argument('--verbose', action='store_true', help='show progress')
 arg = parser.parse_args()
